@@ -18,3 +18,6 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+
+# Credentials
+src/info/sethyx/kangbot/Secret.java
