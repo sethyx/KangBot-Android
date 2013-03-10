@@ -41,8 +41,6 @@ public class GCMIntentService extends GCMBaseIntentService {
     private static final String P_TIME = "time";
     private static final String P_ERROR = "errlog";
 
-    private static final String SOUND_PATH = "/system/media/audio/notifications/Pollux.ogg";
-
     public GCMIntentService() {
         super(Secret.SENDER_ID);
     }
@@ -123,9 +121,8 @@ public class GCMIntentService extends GCMBaseIntentService {
                 .setContentTitle(device)
                 .setContentText(msg)
                 .setSmallIcon(icon)
-                .setSound(Uri.fromFile(new
-                        File(SOUND_PATH)))
                 .setWhen(when)
+                .setDefaults(Notification.DEFAULT_SOUND)
                 .setLights(Color.argb(255, 255, 122, 0), 500, 500)
                 .setContentIntent(intent)
                 .build();
