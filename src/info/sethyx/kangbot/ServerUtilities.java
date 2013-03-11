@@ -25,7 +25,7 @@ import com.google.android.gcm.GCMRegistrar;
 public final class ServerUtilities {
     private static final String TAG = "ServerUtilities";
 
-    private static final int MAX_ATTEMPTS = 3;
+    private static final int MAX_ATTEMPTS = 5;
     private static final int BACKOFF_MILLI_SECONDS = 2000;
     private static final Random random = new Random();
 
@@ -59,6 +59,8 @@ public final class ServerUtilities {
                     GCMHelper.displayMessage(context, message);
                     return true;
                 } else {
+                    // dont backoff in case of a wrong password
+                    GCMHelper.displayMessage(context, message);
                     return false;
                 }
             } catch (IOException e) {

@@ -50,10 +50,10 @@ public class GCMIntentService extends GCMBaseIntentService {
         Log.i(TAG, "Device registered on GCM");
         GCMHelper.displayMessage(context, getString(R.string.gcm_registered));
         try {
-            PrefsHelper.putID(this, registrationId);
-            PrefsHelper.putVersion(this, getPackageManager().
+            PrefsHelper.putID(context, registrationId);
+            PrefsHelper.putVersion(context, getPackageManager().
                     getPackageInfo(getPackageName(), 0).versionCode);
-            ServerUtilities.register(this, registrationId, PrefsHelper.getID(this));
+            ServerUtilities.register(context, registrationId, PrefsHelper.getID(this));
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -68,7 +68,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         if (GCMRegistrar.isRegisteredOnServer(context)) {
             ServerUtilities.unregister(context, registrationId);
             GCMRegistrar.setRegisteredOnServer(context, false);
-            PrefsHelper.putID(this, "");
+            PrefsHelper.putID(context, "");
         } else {
             Log.i(TAG, "Ignoring unregister callback");
         }
@@ -171,7 +171,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                     stringbuilder.append(currentline + "\n");
                 }
                 result = stringbuilder.toString();
-                Log.v("HTTP REQUEST", result);
+                // Log.v("HTTP REQUEST", result);
                 inputstream.close();
             }
         } catch (IOException e) {
