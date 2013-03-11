@@ -74,6 +74,7 @@ public class KangBotActivity extends ListActivity implements LoaderCallbacks<Cur
         super.onCreate(savedInstanceState);
 
         mContext = getApplicationContext();
+        GCMHelper.checkVersionUpdateOnStart(mContext);
         mActivity = this;
         CursorLoader loader = new CursorLoader(this, BuildLogProvider.CONTENT_URI, new String[] {
                         BuildLogProvider._ID,

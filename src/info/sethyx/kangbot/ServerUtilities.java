@@ -35,8 +35,7 @@ public final class ServerUtilities {
     private static final String P_PWD = "pwd";
 
     public static boolean register(final Context context, final String regId, /* optional */
-            final String oldId)
-            throws ClassNotFoundException {
+            final String oldId) {
         Log.i(TAG, "registering device");
         String serverUrl = Secret.SERVER_REG_URL;
         Map<String, String> params = new HashMap<String, String>();
@@ -51,10 +50,15 @@ public final class ServerUtilities {
         // app server. As the server might be down, we will retry it a couple
         // times.
         for (int i = 1; i <= MAX_ATTEMPTS; i++) {
+            if (GCMRegistrar.isRegisteredOnServer(context)) {
+                // AsyncTask finished meanwhile, return
+                return false;
+            }
             Log.d(TAG, "Attempt #" + i + " to register");
             try {
                 String message = post(serverUrl, params);
-                if (message.contains("Success")) {
+                if (message.contains("Successfully added")
+                        || message.contains("already registered")) {
                     GCMRegistrar.setRegisteredOnServer(context, true);
                     GCMHelper.displayMessage(context, message);
                     return true;

@@ -90,55 +90,53 @@ public class GCMHelper {
     }
 
     public static void register(final Context context) {
-        GCMRegistrar.checkDevice(context);
-        try {
-            if (PrefsHelper.getVersion(context) < context.getPackageManager().
-                    getPackageInfo(context.getPackageName(), 0).versionCode) {
-                GCMRegistrar.register(context, Secret.SENDER_ID);
-                GCMRegistrar.setRegisteredOnServer(context, false);
-                Log.i(TAG, "version changed, re-register!");
-            }
-            final String regId = GCMRegistrar.getRegistrationId(context);
-            if (regId.equals("")) {
-                Log.i(TAG, "registering device on GCM!");
-                GCMRegistrar.register(context, Secret.SENDER_ID);
+        if (!GCMRegistrar.getRegistrationId(context).equals("") && GCMRegistrar.isRegisteredOnServer(context)) {
+            Log.d(TAG, "ALL OK");
+            return;
+        }
+        final String regId = GCMRegistrar.getRegistrationId(context);
+        if (regId.equals("")) {
+            Log.i(TAG, "registering device on GCM!");
+            GCMRegistrar.register(context, Secret.SENDER_ID);
+        } else {
+            // Device is already registered on GCM, check server.
+            if (GCMRegistrar.isRegisteredOnServer(context)) {
+                // Skip registration.
+                Log.i(TAG, "device already registered on server!");
             } else {
-                // Device is already registered on GCM, check server.
-                if (GCMRegistrar.isRegisteredOnServer(context)) {
-                    // Skip registration.
-                    Log.i(TAG, "device already registered on server!");
-                } else {
-                    // Try to register again, but not in the UI thread.
-                    Log.i(TAG, "registering device on server!");
-                    mRegisterTask = new AsyncTask<Void, Void, Void>() {
+                // Try to register again, but not in the UI thread.
+                Log.i(TAG, "registering device on server!");
+                mRegisterTask = new AsyncTask<Void, Void, Void>() {
 
-                        @Override
-                        protected Void doInBackground(Void... params) {
-                            boolean registered = false;
-                            try {
-                                registered = ServerUtilities
-                                        .register(context, regId,
-                                                PrefsHelper.getID(context));
-                            } catch (ClassNotFoundException e) {
-                                e.printStackTrace();
-                            }
-                            // At this point all attempts to register with
-                            // the app
-                            // server failed, so we need to unregister the
-                            // device from GCM
-                            if (!registered) {
-                                GCMRegistrar.unregister(context);
-                            }
-                            return null;
-                        }
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        ServerUtilities
+                                .register(context, regId,
+                                        PrefsHelper.getID(context));
+                        return null;
+                    }
 
-                        @Override
-                        protected void onPostExecute(Void result) {
-                            mRegisterTask = null;
+                    @Override
+                    protected void onPostExecute(Void result) {
+                        if (!GCMRegistrar.isRegisteredOnServer(context)) {
+                            GCMRegistrar.unregister(context);
                         }
-                    };
-                    mRegisterTask.execute(null, null, null);
-                }
+                        mRegisterTask = null;
+                    }
+                };
+                mRegisterTask.execute(null, null, null);
+            }
+        }
+    }
+
+    public static void checkVersionUpdateOnStart(Context context) {
+        try {
+            if ((PrefsHelper.getVersion(context) < context.getPackageManager().
+                    getPackageInfo(context.getPackageName(), 0).versionCode)
+                    && GCMRegistrar.isRegisteredOnServer(context)) {
+                GCMRegistrar.setRegisteredOnServer(context, false);
+                GCMRegistrar.register(context, Secret.SENDER_ID);
+                Log.d(TAG, "version changed, re-register");
             }
         } catch (NameNotFoundException e) {
             e.printStackTrace();

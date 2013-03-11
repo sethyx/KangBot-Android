@@ -50,13 +50,11 @@ public class GCMIntentService extends GCMBaseIntentService {
         Log.i(TAG, "Device registered on GCM");
         GCMHelper.displayMessage(context, getString(R.string.gcm_registered));
         try {
+            ServerUtilities.register(context, registrationId, PrefsHelper.getID(this));
             PrefsHelper.putID(context, registrationId);
             PrefsHelper.putVersion(context, getPackageManager().
                     getPackageInfo(getPackageName(), 0).versionCode);
-            ServerUtilities.register(context, registrationId, PrefsHelper.getID(this));
         } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
